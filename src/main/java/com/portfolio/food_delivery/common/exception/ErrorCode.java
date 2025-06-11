@@ -14,6 +14,8 @@ public enum ErrorCode {
     ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "C003", "엔티티를 찾을 수 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C004", "서버 오류가 발생했습니다."),
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "C005", "잘못된 타입입니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "C006", "인증이 필요합니다."),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "C007", "권한이 없습니다."),
 
     // User
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "U001", "이미 사용 중인 이메일입니다."),
@@ -23,6 +25,7 @@ public enum ErrorCode {
     // Restaurant
     RESTAURANT_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "레스토랑을 찾을 수 없습니다."),
     RESTAURANT_NOT_OPEN(HttpStatus.BAD_REQUEST, "R002", "현재 영업 중이 아닙니다."),
+    RESTAURANT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "R003", "레스토랑에 대한 권한이 없습니다."),
 
     // Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "O001", "주문을 찾을 수 없습니다."),

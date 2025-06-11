@@ -20,3 +20,7 @@ logging:
   level:
     org.springframework.web: debug
     org.springframework.security: debug
+
+jwt:
+  secret: "dGhpcy1pcy1hLXZlcnktbG9uZy1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi1pbi1mb29kLWRlbGl2ZXJ5LWFwcGxpY2F0aW9u"
+  token-validity-in-seconds: 3600  # 테스트용 1시간
