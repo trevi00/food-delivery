@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/restaurants", "/api/restaurants/**").permitAll()  // 레스토랑 조회는 모두 허용
+                        .requestMatchers(HttpMethod.GET, "/api/restaurants/*/menus").permitAll()  // 메뉴 조회는 모두 허용
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
@@ -44,6 +45,7 @@ public class SecurityConfig {
                         .frameOptions(frame -> frame.disable())
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }

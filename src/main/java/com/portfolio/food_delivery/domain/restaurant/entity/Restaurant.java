@@ -2,11 +2,14 @@ package com.portfolio.food_delivery.domain.restaurant.entity;
 
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
+import com.portfolio.food_delivery.domain.menu.entity.Menu;
 import com.portfolio.food_delivery.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "restaurants")
@@ -15,6 +18,10 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Builder
 public class Restaurant extends BaseEntity {
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Menu> menus = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
