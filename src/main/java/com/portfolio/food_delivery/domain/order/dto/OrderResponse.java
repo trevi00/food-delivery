@@ -31,6 +31,7 @@ public class OrderResponse {
     private LocalDateTime orderedAt;
     private LocalDateTime completedAt;
     private String cancelReason;
+    private boolean hasReview;
 
     public static OrderResponse from(Order order) {
         return OrderResponse.builder()
@@ -50,6 +51,7 @@ public class OrderResponse {
                 .orderedAt(order.getOrderedAt())
                 .completedAt(order.getCompletedAt())
                 .cancelReason(order.getCancelReason())
+                .hasReview(order.hasReview())
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.portfolio.food_delivery.domain.user.entity;
 
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
+import com.portfolio.food_delivery.domain.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.*;
 import com.portfolio.food_delivery.domain.order.entity.Order;
@@ -38,6 +39,10 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

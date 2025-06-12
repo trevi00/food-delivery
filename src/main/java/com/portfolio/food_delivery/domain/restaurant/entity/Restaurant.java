@@ -4,6 +4,7 @@ import com.portfolio.food_delivery.domain.order.entity.Order;
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
 import com.portfolio.food_delivery.domain.menu.entity.Menu;
+import com.portfolio.food_delivery.domain.review.entity.Review;
 import com.portfolio.food_delivery.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +28,10 @@ public class Restaurant extends BaseEntity {
     @OneToMany(mappedBy = "restaurant")
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,4 +103,6 @@ public class Restaurant extends BaseEntity {
         this.rating = newRating;
         this.reviewCount = newReviewCount;
     }
+
+
 }

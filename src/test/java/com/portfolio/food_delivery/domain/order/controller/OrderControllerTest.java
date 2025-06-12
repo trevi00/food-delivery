@@ -7,6 +7,7 @@ import com.portfolio.food_delivery.domain.menu.repository.MenuRepository;
 import com.portfolio.food_delivery.domain.order.dto.OrderCreateRequest;
 import com.portfolio.food_delivery.domain.order.dto.OrderItemRequest;
 import com.portfolio.food_delivery.domain.order.entity.Order;
+import com.portfolio.food_delivery.domain.order.entity.OrderItem;
 import com.portfolio.food_delivery.domain.order.entity.OrderStatus;
 import com.portfolio.food_delivery.domain.order.repository.OrderRepository;
 import com.portfolio.food_delivery.domain.restaurant.entity.Restaurant;
@@ -316,6 +317,15 @@ class OrderControllerTest extends BaseIntegrationTest {
                 .status(OrderStatus.PENDING)
                 .orderedAt(java.time.LocalDateTime.now())
                 .build();
+
+        // OrderItem 추가
+        OrderItem orderItem = OrderItem.builder()
+                .menu(menu1)
+                .quantity(1)
+                .price(menu1.getPrice())
+                .build();
+
+        order.addOrderItem(orderItem);
 
         return orderRepository.save(order);
     }

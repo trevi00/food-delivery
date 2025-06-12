@@ -3,6 +3,7 @@ package com.portfolio.food_delivery.domain.order.entity;
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
 import com.portfolio.food_delivery.domain.restaurant.entity.Restaurant;
+import com.portfolio.food_delivery.domain.review.entity.Review;
 import com.portfolio.food_delivery.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +35,9 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+    private Review review;
 
     @Embedded
     private Address deliveryAddress;
@@ -92,5 +96,9 @@ public class Order extends BaseEntity {
 
     public boolean isRestaurantOwnedBy(Long userId) {
         return this.restaurant.isOwnedBy(userId);
+    }
+
+    public boolean hasReview() {
+        return this.review != null && !this.review.getIsDeleted();
     }
 }
