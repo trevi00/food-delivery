@@ -4,6 +4,9 @@ import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import com.portfolio.food_delivery.domain.order.entity.Order;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -31,6 +34,10 @@ public class User extends BaseEntity {
 
     @Embedded
     private Address address;
+
+    @OneToMany(mappedBy = "user")
+    @Builder.Default
+    private List<Order> orders = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

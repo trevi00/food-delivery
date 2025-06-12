@@ -1,5 +1,6 @@
 package com.portfolio.food_delivery.domain.restaurant.entity;
 
+import com.portfolio.food_delivery.domain.order.entity.Order;
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
 import com.portfolio.food_delivery.domain.menu.entity.Menu;
@@ -22,6 +23,10 @@ public class Restaurant extends BaseEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Menu> menus = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant")
+    @Builder.Default
+    private List<Order> orders = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
