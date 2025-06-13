@@ -195,6 +195,8 @@ class ReviewControllerTest extends BaseIntegrationTest {
         Order pendingOrder = Order.builder()
                 .user(customer)
                 .restaurant(restaurant)
+                .deliveryAddress(customer.getAddress())
+                .phoneNumber(customer.getPhoneNumber())
                 .status(OrderStatus.PENDING)
                 .orderedAt(LocalDateTime.now())
                 .totalAmount(20000)
@@ -295,12 +297,15 @@ class ReviewControllerTest extends BaseIntegrationTest {
                 .name("고객2")
                 .phoneNumber("010-5555-6666")
                 .role(UserRole.CUSTOMER)
+                .address(new Address("서울시", "강남구", "역삼로", "789", "12347"))
                 .build();
         customer2 = userRepository.save(customer2);
 
         Order order2 = Order.builder()
                 .user(customer2)
                 .restaurant(restaurant)
+                .deliveryAddress(customer2.getAddress())
+                .phoneNumber(customer2.getPhoneNumber())
                 .status(OrderStatus.DELIVERED)
                 .orderedAt(LocalDateTime.now().minusHours(3))
                 .completedAt(LocalDateTime.now().minusHours(2))
@@ -341,8 +346,8 @@ class ReviewControllerTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.averageRating").exists())
                 .andExpect(jsonPath("$.totalReviews").value(3))
                 .andExpect(jsonPath("$.ratingDistribution").exists())
-                .andExpect(jsonPath("$.ratingDistribution['5']").value(2))
-                .andExpect(jsonPath("$.ratingDistribution['4']").value(1));
+                .andExpect(jsonPath("$.ratingDistribution.5").value(2))
+                .andExpect(jsonPath("$.ratingDistribution.4").value(1));
     }
 
     @Test
@@ -406,6 +411,8 @@ class ReviewControllerTest extends BaseIntegrationTest {
             Order order = Order.builder()
                     .user(user)
                     .restaurant(restaurant)
+                    .deliveryAddress(new Address("서울시", "강남구", "선릉로", "100", "12348"))
+                    .phoneNumber(user.getPhoneNumber())
                     .status(OrderStatus.DELIVERED)
                     .orderedAt(LocalDateTime.now().minusHours(i + 3))
                     .completedAt(LocalDateTime.now().minusHours(i + 2))
@@ -437,6 +444,8 @@ class ReviewControllerTest extends BaseIntegrationTest {
         Order order3 = Order.builder()
                 .user(user3)
                 .restaurant(restaurant)
+                .deliveryAddress(new Address("서울시", "강남구", "대치로", "200", "12349"))
+                .phoneNumber(user3.getPhoneNumber())
                 .status(OrderStatus.DELIVERED)
                 .orderedAt(LocalDateTime.now().minusHours(5))
                 .completedAt(LocalDateTime.now().minusHours(4))

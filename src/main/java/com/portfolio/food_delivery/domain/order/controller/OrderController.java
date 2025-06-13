@@ -33,6 +33,15 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/from-cart")
+    public ResponseEntity<OrderResponse> createOrderFromCart() {
+        String email = SecurityUtil.getCurrentUserEmailOrThrow();
+        Long userId = userService.getUserIdByEmail(email);
+
+        OrderResponse response = orderService.createOrderFromCart(userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long orderId) {
         String email = SecurityUtil.getCurrentUserEmailOrThrow();

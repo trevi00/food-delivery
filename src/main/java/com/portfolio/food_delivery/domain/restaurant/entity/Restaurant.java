@@ -103,6 +103,4 @@ public class Restaurant extends BaseEntity {
         this.rating = newRating;
         this.reviewCount = newReviewCount;
     }
-
-
 }

@@ -1,5 +1,6 @@
 package com.portfolio.food_delivery.domain.order.service;
 
+import com.portfolio.food_delivery.domain.cart.service.CartService;
 import com.portfolio.food_delivery.domain.menu.entity.Menu;
 import com.portfolio.food_delivery.domain.menu.entity.MenuStatus;
 import com.portfolio.food_delivery.domain.menu.exception.MenuNotFoundException;
@@ -36,6 +37,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final MenuRepository menuRepository;
+    private final CartService cartService;
 
     @Transactional
     public OrderResponse createOrder(Long userId, OrderCreateRequest request) {
@@ -98,6 +100,23 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
         return OrderResponse.from(savedOrder);
+    }
+
+    @Transactional
+    public OrderResponse createOrderFromCart(Long userId) {
+        // 장바구니 검증
+        cartService.validateCartItems(userId);
+
+        // 장바구니를 주문 요청으로 변환
+        OrderCreateRequest request = cartService.convertToOrderRequest(userId);
+
+        // 주문 생성
+        OrderResponse orderResponse = createOrder(userId, request);
+
+        // 주문 성공 시 장바구니 비우기
+        cartService.clearCart(userId);
+
+        return orderResponse;
     }
 
     public OrderResponse getOrder(Long orderId, Long userId) {

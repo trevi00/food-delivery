@@ -2,10 +2,11 @@ package com.portfolio.food_delivery.domain.user.entity;
 
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.common.entity.BaseEntity;
-import com.portfolio.food_delivery.domain.review.entity.Review;
+import com.portfolio.food_delivery.domain.cart.entity.Cart;
 import jakarta.persistence.*;
 import lombok.*;
 import com.portfolio.food_delivery.domain.order.entity.Order;
+import com.portfolio.food_delivery.domain.review.entity.Review;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,9 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<Review> reviews = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private Cart cart;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

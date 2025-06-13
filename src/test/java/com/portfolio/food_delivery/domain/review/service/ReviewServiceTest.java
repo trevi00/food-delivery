@@ -34,6 +34,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -87,6 +88,8 @@ class ReviewServiceTest {
         });
         given(reviewRepository.calculateAverageRating(restaurant.getId())).willReturn(4.5);
         given(reviewRepository.countByRestaurantId(restaurant.getId())).willReturn(10);
+        given(restaurantRepository.findById(restaurant.getId())).willReturn(Optional.of(restaurant));
+        given(restaurantRepository.save(any(Restaurant.class))).willReturn(restaurant);
 
         // when
         ReviewResponse response = reviewService.createReview(userId, request);
@@ -99,6 +102,7 @@ class ReviewServiceTest {
         verify(orderRepository).findById(orderId);
         verify(reviewRepository).existsByOrderIdAndIsDeletedFalse(orderId);
         verify(reviewRepository).save(any(Review.class));
+        verify(restaurantRepository).findById(restaurant.getId());
         verify(restaurantRepository).save(any(Restaurant.class)); // 평점 업데이트
     }
 
@@ -172,6 +176,8 @@ class ReviewServiceTest {
         given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
         given(reviewRepository.calculateAverageRating(restaurant.getId())).willReturn(4.2);
         given(reviewRepository.countByRestaurantId(restaurant.getId())).willReturn(10);
+        given(restaurantRepository.findById(restaurant.getId())).willReturn(Optional.of(restaurant));
+        given(restaurantRepository.save(any(Restaurant.class))).willReturn(restaurant);
 
         // when
         ReviewResponse response = reviewService.updateReview(reviewId, userId, request);
@@ -181,6 +187,7 @@ class ReviewServiceTest {
         assertThat(response.getContent()).isEqualTo("수정된 내용");
 
         verify(reviewRepository).findById(reviewId);
+        verify(restaurantRepository).findById(restaurant.getId());
         verify(restaurantRepository).save(any(Restaurant.class));
     }
 
@@ -191,9 +198,11 @@ class ReviewServiceTest {
         Long reviewId = 1L;
         Long ownerId = 2L;
 
+        User customer = createUser(1L);
         User owner = createOwner(ownerId);
         Restaurant restaurant = createRestaurantWithOwner(owner);
-        Review review = createReview(reviewId, createUser(1L), restaurant, null);
+        Order order = createDeliveredOrder(1L, customer, restaurant);
+        Review review = createReview(reviewId, customer, restaurant, order);
 
         ReviewReplyRequest request = ReviewReplyRequest.builder()
                 .reply("소중한 리뷰 감사합니다!")
@@ -221,9 +230,11 @@ class ReviewServiceTest {
         Restaurant restaurant = createRestaurant();
         User user1 = createUser(1L);
         User user2 = createUser(2L);
+        Order order1 = createDeliveredOrder(1L, user1, restaurant);
+        Order order2 = createDeliveredOrder(2L, user2, restaurant);
 
-        Review review1 = createReview(1L, user1, restaurant, null);
-        Review review2 = createReview(2L, user2, restaurant, null);
+        Review review1 = createReview(1L, user1, restaurant, order1);
+        Review review2 = createReview(2L, user2, restaurant, order2);
 
         Page<Review> reviewPage = new PageImpl<>(Arrays.asList(review1, review2), pageable, 2);
 
@@ -256,6 +267,8 @@ class ReviewServiceTest {
         given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
         given(reviewRepository.calculateAverageRating(restaurant.getId())).willReturn(4.0);
         given(reviewRepository.countByRestaurantId(restaurant.getId())).willReturn(9);
+        given(restaurantRepository.findById(restaurant.getId())).willReturn(Optional.of(restaurant));
+        given(restaurantRepository.save(any(Restaurant.class))).willReturn(restaurant);
 
         // when
         reviewService.deleteReview(reviewId, userId);
@@ -264,6 +277,7 @@ class ReviewServiceTest {
         assertThat(review.getIsDeleted()).isTrue();
 
         verify(reviewRepository).findById(reviewId);
+        verify(restaurantRepository).findById(restaurant.getId());
         verify(restaurantRepository).save(any(Restaurant.class));
     }
 
