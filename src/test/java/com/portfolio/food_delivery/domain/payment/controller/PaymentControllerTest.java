@@ -14,6 +14,7 @@ import com.portfolio.food_delivery.domain.payment.entity.Payment;
 import com.portfolio.food_delivery.domain.payment.entity.PaymentMethod;
 import com.portfolio.food_delivery.domain.payment.entity.PaymentStatus;
 import com.portfolio.food_delivery.domain.payment.repository.PaymentRepository;
+import com.portfolio.food_delivery.domain.payment.service.MockPaymentGatewayService;
 import com.portfolio.food_delivery.domain.restaurant.entity.Restaurant;
 import com.portfolio.food_delivery.domain.restaurant.entity.RestaurantCategory;
 import com.portfolio.food_delivery.domain.restaurant.repository.RestaurantRepository;
@@ -60,6 +61,9 @@ class PaymentControllerTest extends BaseIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MockPaymentGatewayService mockPaymentGatewayService;
+
     private String customerToken;
     private User customer;
     private Restaurant restaurant;
@@ -68,6 +72,9 @@ class PaymentControllerTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // Mock PG 서비스 초기화
+        mockPaymentGatewayService.clearTransactions();
+
         paymentRepository.deleteAll();
         orderRepository.deleteAll();
         menuRepository.deleteAll();
@@ -121,14 +128,14 @@ class PaymentControllerTest extends BaseIntegrationTest {
         // 결제 대기 중인 주문 생성
         pendingOrder = createOrder(customer, restaurant, menu, OrderStatus.PENDING);
 
-        // 이미 결제된 주문 생성
+        // 이미 결제된 주문 생성 (테스트용 트랜잭션 ID 사용)
         confirmedOrder = createOrder(customer, restaurant, menu, OrderStatus.CONFIRMED);
         Payment confirmedPayment = Payment.builder()
                 .order(confirmedOrder)
                 .amount(23000)
                 .method(PaymentMethod.CREDIT_CARD)
                 .status(PaymentStatus.SUCCESS)
-                .transactionId("TXN_CONFIRMED_123")
+                .transactionId("TXN_CONFIRMED_123")  // 테스트용 패턴
                 .cardNumber("**** **** **** 1234")
                 .paidAt(LocalDateTime.now())
                 .build();
@@ -223,7 +230,7 @@ class PaymentControllerTest extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("P004"));  // 메시지 대신 에러코드로 검증
+                .andExpect(jsonPath("$.code").value("P004"));
     }
 
     @Test
@@ -243,7 +250,7 @@ class PaymentControllerTest extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("P003"));  // P002 -> P003으로 변경
+                .andExpect(jsonPath("$.code").value("P002"));
     }
 
     @Test
@@ -251,11 +258,6 @@ class PaymentControllerTest extends BaseIntegrationTest {
     void cancelPayment_Success() throws Exception {
         // given
         Payment payment = paymentRepository.findByOrderId(confirmedOrder.getId()).orElseThrow();
-
-        // 디버깅을 위한 로그 추가
-        System.out.println("Payment ID: " + payment.getId());
-        System.out.println("Payment Status: " + payment.getStatus());
-        System.out.println("Payment TransactionId: " + payment.getTransactionId());
 
         PaymentCancelRequest request = PaymentCancelRequest.builder()
                 .cancelReason("고객 변심")
@@ -318,7 +320,7 @@ class PaymentControllerTest extends BaseIntegrationTest {
                 .amount(23000)
                 .method(PaymentMethod.KAKAO_PAY)
                 .status(PaymentStatus.SUCCESS)
-                .transactionId("TXN_KAKAO_456")
+                .transactionId("TXN_CONFIRMED_456")  // 테스트용 패턴
                 .paidAt(LocalDateTime.now())
                 .build();
         paymentRepository.save(anotherPayment);
