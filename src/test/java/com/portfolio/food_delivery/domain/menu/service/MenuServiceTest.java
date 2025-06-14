@@ -27,7 +27,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -61,6 +61,7 @@ class MenuServiceTest {
                 .build();
 
         given(restaurantRepository.findById(restaurantId)).willReturn(Optional.of(restaurant));
+        given(menuRepository.countByRestaurantId(restaurantId)).willReturn(0);
         given(menuRepository.save(any(Menu.class))).willAnswer(invocation -> {
             Menu menu = invocation.getArgument(0);
             return Menu.builder()
@@ -86,6 +87,7 @@ class MenuServiceTest {
         assertThat(response.getStatus()).isEqualTo(MenuStatus.AVAILABLE);
 
         verify(restaurantRepository).findById(restaurantId);
+        verify(menuRepository).countByRestaurantId(restaurantId);
         verify(menuRepository).save(any(Menu.class));
     }
 

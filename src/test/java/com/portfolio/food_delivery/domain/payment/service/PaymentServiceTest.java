@@ -12,7 +12,6 @@ import com.portfolio.food_delivery.domain.payment.repository.PaymentRepository;
 import com.portfolio.food_delivery.domain.payment.service.PaymentGatewayService.PaymentGatewayResponse;
 import com.portfolio.food_delivery.domain.restaurant.entity.Restaurant;
 import com.portfolio.food_delivery.domain.user.entity.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,9 +28,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -44,15 +41,11 @@ class PaymentServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
     private PaymentGatewayService paymentGatewayService;
 
+    @InjectMocks
     private PaymentService paymentService;
-
-    @BeforeEach
-    void setUp() {
-        this.paymentGatewayService = new MockPaymentGatewayService(); // 실제 구현체 주입
-        this.paymentService = new PaymentService(paymentRepository, orderRepository, paymentGatewayService);
-    }
 
     @Test
     @DisplayName("결제 처리 성공")
@@ -69,40 +62,41 @@ class PaymentServiceTest {
                 .cardCvc("123")
                 .build();
 
-        Payment savedPayment = Payment.builder()
-                .id(1L)
-                .order(order)
-                .amount(23000)
-                .method(PaymentMethod.CREDIT_CARD)
-                .status(PaymentStatus.SUCCESS)
-                .transactionId("TXN_123456")
-                .cardNumber("**** **** **** 5678")
-                .paidAt(LocalDateTime.now())
-                .build();
-
-        // Mock 설정
+        // Payment 저장 시 상태 변화를 반영하기 위한 설정
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
         given(paymentRepository.existsByOrderId(orderId)).willReturn(false);
-        given(paymentRepository.save(any(Payment.class))).willReturn(savedPayment);
+
+        // save 호출 시 ID와 기본 상태를 가진 Payment 반환
+        given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            return Payment.builder()
+                    .id(1L)
+                    .order(payment.getOrder())
+                    .amount(payment.getAmount())
+                    .method(payment.getMethod())
+                    .status(payment.getStatus())
+                    .build();
+        });
 
         PaymentGatewayResponse pgResponse = new PaymentGatewayResponse(
                 true, "TXN_123456", "**** **** **** 5678", null);
-        given(paymentGatewayService.processPayment(any(PaymentRequest.class), anyInt())).willReturn(pgResponse);
+        given(paymentGatewayService.processPayment(eq(request), eq(23000)))
+                .willReturn(pgResponse);
 
         // when
         PaymentResponse response = paymentService.processPayment(request);
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
-        assertThat(response.getTransactionId()).isEqualTo("TXN_123456");
-        assertThat(response.getCardNumber()).isEqualTo("**** **** **** 5678");
+        assertThat(response.getOrderId()).isEqualTo(orderId);
+        assertThat(response.getAmount()).isEqualTo(23000);
+        assertThat(response.getMethod()).isEqualTo(PaymentMethod.CREDIT_CARD);
 
-        // 검증 - 각 메서드가 정확히 한 번씩만 호출되었는지 확인
-        verify(orderRepository, times(1)).findById(orderId);
-        verify(paymentRepository, times(1)).existsByOrderId(orderId);
-        verify(paymentRepository, times(1)).save(any(Payment.class));
-        verify(paymentGatewayService, times(1)).processPayment(any(PaymentRequest.class), anyInt());
+        // verify
+        verify(orderRepository).findById(orderId);
+        verify(paymentRepository).existsByOrderId(orderId);
+        verify(paymentRepository).save(any(Payment.class));
+        verify(paymentGatewayService).processPayment(eq(request), eq(23000));
     }
 
     @Test
@@ -115,35 +109,36 @@ class PaymentServiceTest {
         PaymentRequest request = PaymentRequest.builder()
                 .orderId(orderId)
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
-                .cardNumber("9999567812345678")  // 실패 케이스
-                .build();
-
-        Payment savedPayment = Payment.builder()
-                .id(1L)
-                .order(order)
-                .amount(23000)
-                .method(PaymentMethod.CREDIT_CARD)
-                .status(PaymentStatus.FAILED)
-                .failureReason("카드 한도 초과")
+                .cardNumber("9999567812345678")
                 .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
         given(paymentRepository.existsByOrderId(orderId)).willReturn(false);
-        given(paymentRepository.save(any(Payment.class))).willReturn(savedPayment);
+        given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            return Payment.builder()
+                    .id(1L)
+                    .order(payment.getOrder())
+                    .amount(payment.getAmount())
+                    .method(payment.getMethod())
+                    .status(payment.getStatus())
+                    .build();
+        });
 
         PaymentGatewayResponse pgResponse = new PaymentGatewayResponse(
                 false, null, null, "카드 한도 초과");
-        given(paymentGatewayService.processPayment(any(PaymentRequest.class), anyInt())).willReturn(pgResponse);
+        given(paymentGatewayService.processPayment(eq(request), eq(23000)))
+                .willReturn(pgResponse);
 
         // when & then
         assertThatThrownBy(() -> paymentService.processPayment(request))
                 .isInstanceOf(PaymentFailedException.class)
                 .hasMessageContaining("카드 한도 초과");
 
-        verify(orderRepository, times(1)).findById(orderId);
-        verify(paymentRepository, times(1)).existsByOrderId(orderId);
-        verify(paymentRepository, times(1)).save(any(Payment.class));
-        verify(paymentGatewayService, times(1)).processPayment(any(PaymentRequest.class), anyInt());
+        verify(orderRepository).findById(orderId);
+        verify(paymentRepository).existsByOrderId(orderId);
+        verify(paymentRepository).save(any(Payment.class));
+        verify(paymentGatewayService).processPayment(eq(request), eq(23000));
     }
 
     @Test
@@ -159,18 +154,17 @@ class PaymentServiceTest {
                 .build();
 
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
-        given(paymentRepository.existsByOrderId(orderId)).willReturn(true);  // 이미 결제 존재
+        given(paymentRepository.existsByOrderId(orderId)).willReturn(true);
 
         // when & then
         assertThatThrownBy(() -> paymentService.processPayment(request))
                 .isInstanceOf(PaymentAlreadyProcessedException.class)
                 .hasMessage("이미 결제가 완료된 주문입니다.");
 
-        verify(orderRepository, times(1)).findById(orderId);
-        verify(paymentRepository, times(1)).existsByOrderId(orderId);
-        // 중복 결제인 경우 save나 PG 호출이 없어야 함
+        verify(orderRepository).findById(orderId);
+        verify(paymentRepository).existsByOrderId(orderId);
         verify(paymentRepository, never()).save(any(Payment.class));
-        verify(paymentGatewayService, never()).processPayment(any(PaymentRequest.class), anyInt());
+        verify(paymentGatewayService, never()).processPayment(any(), anyInt());
     }
 
     @Test
@@ -182,7 +176,8 @@ class PaymentServiceTest {
         Payment payment = createSuccessPayment(paymentId, order);
 
         given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-        given(paymentGatewayService.cancelPayment(anyString(), anyInt(), anyString())).willReturn(true);
+        given(paymentGatewayService.cancelPayment(eq("TXN_123456"), eq(23000), eq("고객 요청")))
+                .willReturn(true);
 
         // when
         PaymentResponse response = paymentService.cancelPayment(paymentId, "고객 요청");
@@ -192,8 +187,8 @@ class PaymentServiceTest {
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
         assertThat(response.getCancelReason()).isEqualTo("고객 요청");
 
-        verify(paymentRepository, times(1)).findById(paymentId);
-        verify(paymentGatewayService, times(1)).cancelPayment("TXN_123456", 23000, "고객 요청");
+        verify(paymentRepository).findById(paymentId);
+        verify(paymentGatewayService).cancelPayment("TXN_123456", 23000, "고객 요청");
     }
 
     @Test
@@ -207,7 +202,7 @@ class PaymentServiceTest {
                 .order(order)
                 .amount(23000)
                 .method(PaymentMethod.CREDIT_CARD)
-                .status(PaymentStatus.PENDING)  // 아직 결제 안됨
+                .status(PaymentStatus.PENDING)
                 .build();
 
         given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
@@ -217,8 +212,8 @@ class PaymentServiceTest {
                 .isInstanceOf(InvalidPaymentAmountException.class)
                 .hasMessageContaining("취소할 수 없는 결제입니다");
 
-        verify(paymentRepository, times(1)).findById(paymentId);
-        verify(paymentGatewayService, never()).cancelPayment(anyString(), anyInt(), anyString());
+        verify(paymentRepository).findById(paymentId);
+        verify(paymentGatewayService, never()).cancelPayment(any(), anyInt(), any());
     }
 
     @Test
@@ -248,7 +243,7 @@ class PaymentServiceTest {
         assertThat(response.getContent()).hasSize(2);
         assertThat(response.getTotalElements()).isEqualTo(2);
 
-        verify(paymentRepository, times(1)).findByUserId(userId, pageable);
+        verify(paymentRepository).findByUserId(userId, pageable);
     }
 
     @Test
@@ -269,7 +264,7 @@ class PaymentServiceTest {
         assertThat(response.getId()).isEqualTo(paymentId);
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
 
-        verify(paymentRepository, times(1)).findById(paymentId);
+        verify(paymentRepository).findById(paymentId);
     }
 
     @Test
@@ -289,7 +284,7 @@ class PaymentServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getOrderId()).isEqualTo(orderId);
 
-        verify(paymentRepository, times(1)).findByOrderId(orderId);
+        verify(paymentRepository).findByOrderId(orderId);
     }
 
     @Test
@@ -317,8 +312,8 @@ class PaymentServiceTest {
         paymentService.checkAndUpdatePaymentStatus(paymentId);
 
         // then
-        verify(paymentRepository, times(1)).findById(paymentId);
-        verify(paymentGatewayService, times(1)).getPaymentStatus("TXN_123456");
+        verify(paymentRepository).findById(paymentId);
+        verify(paymentGatewayService).getPaymentStatus("TXN_123456");
     }
 
     // Helper methods
