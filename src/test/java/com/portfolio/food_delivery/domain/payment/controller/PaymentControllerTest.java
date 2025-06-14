@@ -233,22 +233,18 @@ class PaymentControllerTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.code").value("P004"));
     }
 
+    // 테스트 케이스 수정 예시 (PaymentControllerTest)
     @Test
     @DisplayName("결제 처리 실패 - 중복 결제")
     void processPayment_AlreadyPaid() throws Exception {
-        // given
         PaymentRequest request = PaymentRequest.builder()
-                .orderId(confirmedOrder.getId())
+                .orderId(confirmedOrder.getId())  // 이미 결제 완료된 주문 ID 사용
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
-                .cardNumber("1234567812345678")
                 .build();
 
-        // when & then
         mockMvc.perform(post("/api/payments")
                         .header("Authorization", "Bearer " + customerToken)
-                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("P002"));
     }

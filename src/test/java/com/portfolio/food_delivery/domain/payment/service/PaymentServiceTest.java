@@ -12,6 +12,7 @@ import com.portfolio.food_delivery.domain.payment.repository.PaymentRepository;
 import com.portfolio.food_delivery.domain.payment.service.PaymentGatewayService.PaymentGatewayResponse;
 import com.portfolio.food_delivery.domain.restaurant.entity.Restaurant;
 import com.portfolio.food_delivery.domain.user.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,11 +44,15 @@ class PaymentServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
-    @Mock
     private PaymentGatewayService paymentGatewayService;
 
-    @InjectMocks
     private PaymentService paymentService;
+
+    @BeforeEach
+    void setUp() {
+        this.paymentGatewayService = new MockPaymentGatewayService(); // 실제 구현체 주입
+        this.paymentService = new PaymentService(paymentRepository, orderRepository, paymentGatewayService);
+    }
 
     @Test
     @DisplayName("결제 처리 성공")
