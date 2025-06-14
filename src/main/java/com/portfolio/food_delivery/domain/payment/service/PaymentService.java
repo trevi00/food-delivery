@@ -36,12 +36,17 @@ public class PaymentService {
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
 
-        // 2. 주문 상태 확인
+        // 2. 중복 결제 확인을 먼저 체크
+        if (paymentRepository.existsByOrderId(order.getId())) {
+            throw new PaymentAlreadyProcessedException("이미 결제가 완료된 주문입니다.");
+        }
+
+        // 3. 그 다음 주문 상태 확인
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new InvalidPaymentAmountException("결제 대기 중인 주문만 결제할 수 있습니다.");
         }
 
-        // 3. 중복 결제 확인
+        // 3-2. 중복 결제 확인
         if (paymentRepository.existsByOrderId(order.getId())) {
             throw new PaymentAlreadyProcessedException("이미 결제가 완료된 주문입니다.");
         }

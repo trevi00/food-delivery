@@ -243,7 +243,7 @@ class PaymentControllerTest extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("P002"));  // 에러코드로 검증
+                .andExpect(jsonPath("$.code").value("P003"));  // P002 -> P003으로 변경
     }
 
     @Test
@@ -251,6 +251,11 @@ class PaymentControllerTest extends BaseIntegrationTest {
     void cancelPayment_Success() throws Exception {
         // given
         Payment payment = paymentRepository.findByOrderId(confirmedOrder.getId()).orElseThrow();
+
+        // 디버깅을 위한 로그 추가
+        System.out.println("Payment ID: " + payment.getId());
+        System.out.println("Payment Status: " + payment.getStatus());
+        System.out.println("Payment TransactionId: " + payment.getTransactionId());
 
         PaymentCancelRequest request = PaymentCancelRequest.builder()
                 .cancelReason("고객 변심")
@@ -265,7 +270,6 @@ class PaymentControllerTest extends BaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELLED"))
                 .andExpect(jsonPath("$.cancelReason").value("고객 변심"));
-        // cancelledAt 검증 제거
 
         // 주문 상태 확인
         Order updatedOrder = orderRepository.findById(confirmedOrder.getId()).orElseThrow();
