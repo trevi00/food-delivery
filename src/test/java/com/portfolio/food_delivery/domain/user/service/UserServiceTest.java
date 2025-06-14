@@ -1,6 +1,6 @@
 package com.portfolio.food_delivery.domain.user.service;
 
-import com.portfolio.food_delivery.common.entity.Address;  // 이 줄 추가!
+import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.domain.user.dto.LoginRequest;
 import com.portfolio.food_delivery.domain.user.dto.LoginResponse;
 import com.portfolio.food_delivery.domain.user.dto.UserRegisterRequest;

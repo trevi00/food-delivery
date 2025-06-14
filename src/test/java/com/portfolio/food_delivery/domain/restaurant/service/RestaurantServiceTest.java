@@ -3,6 +3,7 @@ package com.portfolio.food_delivery.domain.restaurant.service;
 import com.portfolio.food_delivery.common.entity.Address;
 import com.portfolio.food_delivery.domain.restaurant.dto.RestaurantCreateRequest;
 import com.portfolio.food_delivery.domain.restaurant.dto.RestaurantResponse;
+import com.portfolio.food_delivery.domain.restaurant.exception.UnauthorizedException;
 import com.portfolio.food_delivery.domain.restaurant.dto.RestaurantUpdateRequest;
 import com.portfolio.food_delivery.domain.restaurant.entity.Restaurant;
 import com.portfolio.food_delivery.domain.restaurant.entity.RestaurantCategory;

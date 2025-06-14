@@ -5,6 +5,6 @@ import com.portfolio.food_delivery.common.exception.ErrorCode;
 
 public class InvalidCartException extends BusinessException {
     public InvalidCartException(String message) {
-        super(ErrorCode.ENTITY_NOT_FOUND, message);
+        super(ErrorCode.INVALID_INPUT_VALUE, message);  // C001 코드로 변경
     }
 }

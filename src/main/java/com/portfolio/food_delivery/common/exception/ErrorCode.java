@@ -34,7 +34,14 @@ public enum ErrorCode {
 
     // Menu
     MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "메뉴를 찾을 수 없습니다."),
-    MENU_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "M002", "현재 주문할 수 없는 메뉴입니다.");
+    MENU_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "M002", "현재 주문할 수 없는 메뉴입니다."),
+
+    // Payment
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "결제 정보를 찾을 수 없습니다."),
+    PAYMENT_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "P002", "이미 처리된 결제입니다."),
+    INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "P003", "잘못된 결제 금액입니다."),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "P004", "결제 처리에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(HttpStatus.BAD_REQUEST, "P005", "결제 취소에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
