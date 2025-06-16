@@ -104,7 +104,7 @@ Strategy Pattern: 결제 수단별 전략 패턴 적용
 테스트 자동화: CI/CD 파이프라인 구축 가능한 테스트 환경
 
 GitHub Repository
-https://github.com/trevi00/food-delivery-platform
+[https://github.com/trevi00/food-delivery-platform](https://github.com/trevi00/food-delivery.git)
 
 Commit History: 기능별 상세한 커밋 메시지와 브랜치 전략
 Documentation: README, API 문서, 아키텍처 다이어그램 포함
