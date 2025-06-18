@@ -43,7 +43,7 @@ dependencies {
 	testImplementation 'io.rest-assured:rest-assured'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
 	// QueryDSL (추가 - 복잡한 쿼리를 위해)
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
